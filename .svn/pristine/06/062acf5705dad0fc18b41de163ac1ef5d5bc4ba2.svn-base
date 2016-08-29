@@ -1,0 +1,372 @@
+package com.telehot.times.comm.model;
+
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Formula;
+
+import com.telehot.platform.app.jpa.hibernate.SimpleIdEntity;
+import com.telehot.platform.app.meta.FieldMeta;
+import com.telehot.platform.app.meta.TableMeta;
+import com.telehot.platform.app.spring.ApplicationContextHelper;
+import com.telehot.platform.app.utils.StringUtils;
+import com.telehot.platform.frameapi.OrgnClient;
+
+/**
+ * 版权：(C) 版权所有 2000-2014 上海天好电子商务有限公司苏州分公司
+ * <简述>
+ * <详细描述>
+ * @author   Administrator
+ * @version  $Id$
+ * @since
+ * @see
+ */
+@Entity
+@Table(name = "TM_CM_DEPT_INFO")
+@TableMeta(name = "部门领导信息")
+public class DeptInfo extends SimpleIdEntity<Long> {
+
+    /**
+     * 序列号
+     */
+    private static final long serialVersionUID = 1L;
+    
+    /**
+     * 用户id
+     */
+    @FieldMeta(name = "用户id")
+    private Long userId;
+
+    /**
+     * 用户名
+     */
+    @FieldMeta(name = "用户名")
+    private String username;
+    
+    /**
+     * job
+     */
+    @Transient
+    private String job;
+    
+    /**
+     * 直接主管id
+     */
+    @FieldMeta(name = "直接主管id")
+    private Long directManagerId;
+
+    /**
+     * 直接主管姓名
+     */
+    @FieldMeta(name = "直接主管姓名")
+    private String directManagername;
+    
+    /**
+     * 部门经理id
+     */
+    @FieldMeta(name = "部门经理id")
+    private Long deptManagerId;
+
+    /**
+     * 部门经理姓名
+     */
+    @FieldMeta(name = "部门经理姓名")
+    private String deptManagername;
+
+    /**
+     * 总监id
+     */
+    @FieldMeta(name = "总监id")
+    private Long zongjianId;
+    
+    /**
+     * 总监姓名
+     */
+    @FieldMeta(name = "总监姓名")
+    private String zongjianname;
+    
+    /**
+     * 总经办id
+     */
+    @FieldMeta(name = "总经办id")
+    private Long topManagerId;
+    
+    /**
+     * 总经办
+     */
+    @FieldMeta(name = "总经办")
+    private String topManagername;
+
+    /**
+     * 去年剩余假期
+     */
+    @FieldMeta(name = "去年剩余年假")
+    private Long lastAnnualLeave;
+
+    /**
+     * 今年剩余年假
+     */
+    @FieldMeta(name = "今年剩余年假")
+    private Long nowAnnualLeave;
+
+    /**
+     * 去年剩余调休
+     */
+    @FieldMeta(name = "去年剩余调休")
+    private BigDecimal lastOff;
+
+    /**
+     * 今天剩余调休
+     */
+    @FieldMeta(name = "今年剩余调休")
+    private BigDecimal nowOff;
+    
+    /**
+     * dept
+     */
+    @Transient
+    private String dept;
+    
+    /**
+     * 用于判断剩余调休今去年是否初始化
+     */
+    @FieldMeta(name = "用于判断剩余调休今去年是否初始化")
+    private String year;
+
+    /**
+     * 今年请家长日次数
+     */
+    @FieldMeta(name = "今年请家长日次数")
+    private Integer jiazhangri;
+
+    /**
+     * 是否第一次登陆
+     */
+    @FieldMeta(name = "是否第一次登陆")
+    private Integer isFirst;
+
+    /**
+     * 工作年限
+     */
+    @FieldMeta(name = "工作年限")
+    private BigDecimal wt;
+
+    /**
+     * 是否disable
+     */
+    @Formula("(select u.is_disabled from sys_user u where u.id = user_id)")
+    private Integer isDisabled;
+
+    /**
+     * 新版本发布时
+     */
+    @FieldMeta(name = "新版本发布时")
+    private Integer newVersion;
+
+    public Long getDirectManagerId() {
+        return directManagerId;
+    }
+
+    public void setDirectManagerId(Long directManagerId) {
+        this.directManagerId = directManagerId;
+    }
+
+    public Long getDeptManagerId() {
+        return deptManagerId;
+    }
+
+    public void setDeptManagerId(Long deptManagerId) {
+        this.deptManagerId = deptManagerId;
+    }
+
+    public Long getTopManagerId() {
+        return topManagerId;
+    }
+
+    public void setTopManagerId(Long topManagerId) {
+        this.topManagerId = topManagerId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getDirectManagername() {
+        return directManagername;
+    }
+
+    public void setDirectManagername(String directManagername) {
+        this.directManagername = directManagername;
+    }
+
+    public String getDeptManagername() {
+        return deptManagername;
+    }
+
+    public void setDeptManagername(String deptManagername) {
+        this.deptManagername = deptManagername;
+    }
+
+    public String getTopManagername() {
+        return topManagername;
+    }
+
+    public void setTopManagername(String topManagername) {
+        this.topManagername = topManagername;
+    }
+
+    public Long getLastAnnualLeave() {
+        return lastAnnualLeave;
+    }
+
+    public void setLastAnnualLeave(Long lastAnnualLeave) {
+        this.lastAnnualLeave = lastAnnualLeave;
+    }
+
+    public Long getNowAnnualLeave() {
+        return nowAnnualLeave;
+    }
+
+    public void setNowAnnualLeave(Long nowAnnualLeave) {
+        this.nowAnnualLeave = nowAnnualLeave;
+    }
+    
+    /**
+     * 获取dept
+     * @return string
+     */
+    public String getDept() {
+        // 查出所属组织机构
+        List<String> orgnList = ApplicationContextHelper.getBean(OrgnClient.class).getOrgnInfo(
+            this.userId, "").getResult();
+        String info = "";
+        if (orgnList.size() > 0) {
+
+            for (int i = orgnList.size() - 1; i >= 0; i--) {
+                String[] s = orgnList.get(i).split(";");
+                for (int j = s.length - 1; j >= 0; j--) {
+                    if (StringUtils.isNotBlank(s[j])) {
+                        info += s[j] + "/";
+                    }
+                }
+
+                info = info.substring(0, info.length() > 0 ? info.length() - 1 : 0) + "；";
+            }
+
+        }
+        return info.substring(0, info.length() > 0 ? info.length() - 1 : 0);
+    }
+
+    public void setDept(String dept) {
+        this.dept = dept;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+    /**
+     * 获取job
+     * @return str
+     */
+    public String getJob() {
+        return job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
+
+    public Long getZongjianId() {
+        return zongjianId;
+    }
+
+    public void setZongjianId(Long zongjianId) {
+        this.zongjianId = zongjianId;
+    }
+
+    public String getZongjianname() {
+        return zongjianname;
+    }
+
+    public void setZongjianname(String zongjianname) {
+        this.zongjianname = zongjianname;
+    }
+
+    public Integer getIsFirst() {
+        return isFirst;
+    }
+
+    public void setIsFirst(Integer isFirst) {
+        this.isFirst = isFirst;
+    }
+
+    public BigDecimal getLastOff() {
+        return lastOff;
+    }
+
+    public void setLastOff(BigDecimal lastOff) {
+        this.lastOff = lastOff;
+    }
+
+    public BigDecimal getNowOff() {
+        return nowOff;
+    }
+
+    public void setNowOff(BigDecimal nowOff) {
+        this.nowOff = nowOff;
+    }
+
+    public Integer getIsDisabled() {
+        return isDisabled;
+    }
+
+    public void setIsDisabled(Integer isDisabled) {
+        this.isDisabled = isDisabled;
+    }
+
+    public BigDecimal getWt() {
+        return wt;
+    }
+
+    public void setWt(BigDecimal wt) {
+        this.wt = wt;
+    }
+
+    public Integer getNewVersion() {
+        return newVersion;
+    }
+
+    public void setNewVersion(Integer newVersion) {
+        this.newVersion = newVersion;
+    }
+
+    public Integer getJiazhangri() {
+        return jiazhangri;
+    }
+
+    public void setJiazhangri(Integer jiazhangri) {
+        this.jiazhangri = jiazhangri;
+    }
+
+}

@@ -1,0 +1,5 @@
+ALTER TABLE `tm_lf_leave_form` CHANGE `nowoffcut` `nowoffcut` DECIMAL(20,1) NULL DEFAULT NULL;
+ALTER TABLE `tm_cm_dept_info` DROP `lastoffcut`, DROP `lastyearcut`;
+ALTER TABLE `tm_cm_dept_info` DROP `nowoffcut`, DROP `nowyearcut`;
+ALTER TABLE `tm_cm_dept_info` DROP `all_cancel_time`, DROP `all_time`, DROP `count`;
+ALTER TABLE `tm_cm_dept_info` CHANGE `last_off` `last_off` DECIMAL(20,1) NULL DEFAULT NULL, CHANGE `now_off` `now_off` DECIMAL(20,1) NULL DEFAULT NULL;

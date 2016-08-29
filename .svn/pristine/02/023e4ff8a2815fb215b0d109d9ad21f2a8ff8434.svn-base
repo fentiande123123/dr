@@ -1,0 +1,226 @@
+package com.telehot.times.comm.services;
+
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.telehot.platform.app.utils.StringUtils;
+import com.telehot.platform.frameapi.utils.FrameUtil;
+import com.telehot.times.comm.manager.EditLogManager;
+import com.telehot.times.comm.manager.FieldRelateTypeManager;
+import com.telehot.times.comm.manager.ReportItemManager;
+import com.telehot.times.comm.manager.ReportMainManager;
+import com.telehot.times.comm.manager.ReportValueManager;
+import com.telehot.times.comm.model.EditLog;
+import com.telehot.times.comm.model.FieldRelateType;
+import com.telehot.times.comm.model.ReportItem;
+import com.telehot.times.comm.model.ReportMain;
+import com.telehot.times.comm.model.ReportValue;
+import com.telehot.times.comm.utils.DateUtils;
+
+
+/**
+ * reportService 版权：(C) 版权所有 2000-2014 上海天好电子商务股份有限公司苏州分公司
+ * 
+ * @author yujunyi
+ * @version $Id$
+ */
+@Service
+@Transactional
+public class ReportService {
+
+    /**
+     * reportMainManager
+     */
+    @Autowired
+    private ReportMainManager reportMainManager;
+
+    /**
+     * fieldRelateTypeManager
+     */
+    @Autowired
+    private FieldRelateTypeManager fieldRelateTypeManager;
+
+    /**
+     * ReportItemManager
+     */
+    @Autowired
+    private ReportItemManager reportItemManager;
+
+    /**
+     * ReportValueManager
+     */
+    @Autowired
+    private ReportValueManager reportValueManager;
+
+    /**
+     * EditLogManager
+     */
+    @Autowired
+    private EditLogManager editLogManager;
+
+    /**
+     * 实例化填报项
+     * 
+     * @param year 年
+     * @param month 月
+     * @param areaId 区域ID
+     * @param reportTypeId 填报类型ID
+     * @param way 产生或处理
+     * @return reportMain ReportMain
+     */
+    public synchronized ReportMain createReportMain(int year, int month, long areaId,
+                                                    long reportTypeId, int way) {
+        ReportMain reportMain = reportMainManager.findOne(
+            "from ReportMain where year = ? and month = ? and areaId = ? and reportTypeId = ? and way = ?",
+            new Object[] {year, month, areaId, reportTypeId, way});
+        if (reportMain == null) {
+            // 创建填报主表
+            reportMain = new ReportMain();
+            reportMain.setYear(year);
+            reportMain.setMonth(month);
+            reportMain.setAreaId(areaId);
+            reportMain.setReportTypeId(reportTypeId);
+            reportMain.setCreatePerson(FrameUtil.getUser().getUsername());
+            reportMain.setCreateTime(DateUtils.formatNewDate(new Date()));
+            reportMain.setEditTime(DateUtils.formatNewDate(new Date()));
+            reportMain.setDate(DateUtils.str2Date(year + "" + month, "yyyyMM"));
+            reportMain.setWay(way);
+            reportMainManager.save(reportMain);
+        } else {// 若存在则修改编辑时间
+            reportMain.setEditTime(DateUtils.formatNewDate(new Date()));
+            reportMainManager.save(reportMain);
+        }
+        return reportMain;
+    }
+
+    /**
+     * 创建所有数据项和数据项值对象
+     * 
+     * @author zhou
+     * @param reportMain ReportMain
+     */
+    public void createReportItem(ReportMain reportMain) {
+        // 查询是否已生成数据项，如已生成，则返回
+        List<ReportItem> reportItemList = reportItemManager.findAll(
+            "from ReportItem where reportMainId = ?", new Object[] {reportMain.getId()});
+        if (reportItemList != null && reportItemList.size() > 0) {
+            // 判断是否已生成数据项值对象
+            // List<ReportValue> reportValueList =
+            // reportMainService.findAllValue(reportMain.getId());
+            for (ReportItem reportItem : reportItemList) {
+                ReportValue reportValue = reportValueManager.findOne(
+                    "from ReportValue where reportItemId = ?", new Object[] {reportItem.getId()});
+                if (reportValue == null) {
+                    reportValue = new ReportValue();
+                    reportValue.setReportItemId(reportItem.getId());
+                    reportValueManager.save(reportValue);
+                }
+            }
+            return;
+        }
+
+        // 生成填报项
+        List<FieldRelateType> fieldRelateTypeList = fieldRelateTypeManager.findAll(
+            "from FieldRelateType where isDelete != 1 and reportTypeId = ?",
+            new Object[] {reportMain.getReportTypeId()});
+        for (FieldRelateType fieldRelateType : fieldRelateTypeList) {
+            // 实例化reportItem
+            ReportItem reportItem = new ReportItem();
+            reportItem.setReportMainId(reportMain.getId());
+            reportItem.setFieldId(fieldRelateType.getFieldId());
+            reportItemManager.save(reportItem);
+            // 实例化reportValue
+            ReportValue reportValue = new ReportValue();
+            reportValue.setReportItemId(reportItem.getId());
+            reportValueManager.save(reportValue);
+        }
+    }
+
+    /**
+     * 通过字段添加数据项和数据项值对象
+     * 
+     * @author zhou
+     * @param reportValueId Long
+     * @param reportMainId Long
+     * @param fieldId Long
+     * @param value String
+     * @param corpId Long
+     */
+    public void createReportValue(String reportValueId, Long reportMainId, Long fieldId,
+                                  BigDecimal value, String corpId) {
+        // 判断reportvalue是否存在，是编辑还是新增
+        ReportItem reportItem = null;
+        ReportValue reportValue = null;
+        if (reportValueId == null) {
+            reportItem = new ReportItem();
+            reportValue = new ReportValue();
+        } else {
+            reportItem = findItemByValue(Long.valueOf(reportValueId));
+            reportValue = reportValueManager.findOne(Long.valueOf(reportValueId));
+            //判断是否选择了企业
+            if (StringUtils.isNotBlank(corpId)) {
+                saveLog(Long.valueOf(reportValueId), fieldId, value, Long.valueOf(corpId));
+            } else {
+                saveLog(Long.valueOf(reportValueId), fieldId, value, null);
+            }
+        }
+        // 实例化数据项
+        reportItem.setReportMainId(reportMainId);
+        reportItem.setFieldId(fieldId);
+        reportItemManager.save(reportItem);
+        // 实例化数据值
+        reportValue.setReportItemId(reportItem.getId());
+        reportValue.setValue(value);
+        if (corpId != null && !("".equals(corpId))) {
+            reportValue.setCorpId(Long.valueOf(corpId));
+        }
+        reportValueManager.save(reportValue);
+    }
+
+    /**
+     * 通过reportValueId得到reportItem
+     * 
+     * @author zhou
+     * @param reportValueId Long
+     * @return ReportItem
+     */
+    public ReportItem findItemByValue(Long reportValueId) {
+        ReportValue reportValue = reportValueManager.findOne(reportValueId);
+        return reportItemManager.findOne(reportValue.getReportItemId());
+    }
+
+    /**
+     * 
+     * 保存修改日志
+     * @author zhou
+     * @param reportValueId Long
+     * @param fieldId Long
+     * @param value String
+     * @param corpId Long
+     */
+    public void saveLog(Long reportValueId, Long fieldId, BigDecimal value, Long corpId) {
+        ReportValue reportValue = reportValueManager.findOne(reportValueId);
+        if (!(reportValue.getCorpId() == corpId && value.equals(reportValue.getValue()) && reportValue.getReportItem().getFieldId() == fieldId)) {
+            EditLog editLog = new EditLog();
+            editLog.setUserId(FrameUtil.getUser().getId());
+            editLog.setUserName(FrameUtil.getUser().getUsername());
+            editLog.setEditTime(DateUtils.formatNewDate(new Date()));
+            editLog.setReportValueId(reportValueId);
+            // 设置之前的值
+            editLog.setLastCorpId(reportValue.getCorpId());
+            editLog.setLastFieldId(reportValue.getReportItem().getFieldId());
+            editLog.setLastValue(reportValue.getValue());
+            // 设置本次修改的值
+            editLog.setCurrentCorpId(corpId);
+            editLog.setCurrentFieldId(fieldId);
+            editLog.setCurrentValue(value);
+            editLogManager.save(editLog);
+        }
+    }
+}

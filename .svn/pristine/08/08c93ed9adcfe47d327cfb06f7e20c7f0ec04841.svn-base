@@ -1,0 +1,98 @@
+$().ready(function(){
+	
+});
+
+/**
+ * 编辑
+ */
+var edit = function(id) {
+	var reportTypeId = $("#reportTypeId").val();
+	$.openDialog({
+		"title" : "编辑",
+		"height" : 550,
+		"width" : 950,
+		"url" : "edit.do?reportMainId=" + id+"&reportTypeId="+reportTypeId
+	});
+
+}
+
+/**
+ * 查看
+ * @param type
+ * @param idName
+ * @returns
+ */
+var view = function(id){
+	$.openDialog({
+		"title" : "查看",
+		"height" : 550,
+		"width" : 950,
+		"url" : "view.do?reportMainId=" + id
+	});
+}
+
+/**
+ * 删除
+ * @returns
+ */
+var deleteReportMain = function(id) {
+	if (!id) {
+		unMask();
+		return;
+	}
+	var sendData = {
+		'id' : id
+	};
+	$.showConfirm({
+		'title' : '提示',
+		'content' : '确定删除？',
+		'sure' : sureFunction,
+		'cancel' : cancelFunction
+	})
+
+	function sureFunction() {
+		doMask();
+		$.ajax({
+			type : "POST",
+			url : "delete.do",
+			data : sendData,
+			dataType : "json",
+			success : function(data, textStatus, jqXHR) {
+				unMask();
+				if (data && data.success) {
+					$.showAlert({
+						'title' : '提示',
+						'content' : '删除成功！',
+						'sure' : sureFunction1
+					});
+				} else {
+					$.showAlert({
+						'title' : '提示',
+						'content' : '删除失败！',
+						'sure' : sureFunction1
+					});
+				}
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				unMask();
+				$.showAlert({
+					'title' : '提示',
+					'content' : '删除失败！',
+					'sure' : sureFunction1
+				});
+			}
+		});
+	}
+
+	function cancelFunction() {
+		unMask();
+	}
+	function sureFunction1() {
+		query();
+	}
+
+	function query() {
+		$("#frm").submit();
+	}
+
+}

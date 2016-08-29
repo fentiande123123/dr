@@ -1,0 +1,107 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+
+<script type="text/javascript" src="${ctx}/page/reportMain/reportMain-edit.js"></script>
+<script type="text/javascript" src="${ctx}/page/reportMain/reportMain-list.js"></script>
+</head>
+<body>
+
+	<form action="saveEdit.do" method="post" id="frm" >
+	<input type="hidden" id="reportTypeId" name="reportTypeId" value="${reportTypeId}">
+	<input type="hidden" id="reportMainId" name="reportMainId" value="${reportMain.id}">
+	<input type="hidden" id="oldAreaName" name="oldAreaName" value="${oldAreaName}" />
+	<input type="hidden" id="mark" name="mark" value="${mark}">
+		<div  class="submaincc">
+		<div class="cl pd_15">
+		  <!--搜索模块-->
+		     <div class="th_panel th_panel2">
+			     <div class="table_toolbar mt_15 cl" >
+			     <div style="float: left;" id="yearDiv">
+	 			    年份：
+	 			  <p:input path="year" id="year"  class="tui_datepicker input_text radius" datatype="*"   
+	 			  style="width:150px; background: white" nullmsg="年份不能为空" placeholder="请输入年份" 
+	 			  onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'yyyy'})" />
+			      </div>   
+			      <div style="float: left; margin-left: 10px; margin-right: 10px;" id="monthDiv">  
+			           月份：
+			      <p:input path="month" id="month"  class="tui_datepicker input_text radius" datatype="*"   
+			      style="width:150px; background: white;" nullmsg="月份不能为空" placeholder="请输入月份" 
+			      onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'MM'})" />
+	 			  </div>  
+	 			    区县：
+	 			    <input type="hidden" id="areaId" name="areaId" value="${areaId}" />
+ 			  		<input type="text" class="input_text radius" style="width: 150px;" id="areaName" onclick="chooseArea();" placeholder="请选择区县"/>
+			    	<button class="btn btn_primary radius" type="button" style="margin-left: 100px;" onclick="addTr()">
+					<i class="fa fa-plus-square"></i> 新增
+				  </button> &nbsp;&nbsp;&nbsp;
+			      <button class="btn btn_primary radius" type="button" onclick="notChoose()">
+					<i class="fa fa-save"></i> 保存
+				  </button>
+			    </div>
+		    </div>
+			<div class="_height30"></div>
+			<!--表单1 -->
+			<table id="tb"
+				class="table table_border table_striped table_bordered table_bg table_hover table_sort mt_15 mb_15">
+				<thead>
+					<tr class="text_c ">
+						<th width="10%">编号</th>
+						<th>类别</th>
+						<th width="10%">数量</th>
+						<th width="20%">企业</th>
+						<th width="10%">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:forEach items="${reportValueList}" var="item" varStatus="index">
+						<tr class="text_c" id="tr_${index.index+1}">
+							<td>${index.index+1}<input type="hidden" name="reportValueId" value="${item.id}" /></td>
+							<td>
+								  <select id="fieldList" class="input_text radius" name="fieldId" style="width:350px;" onchange="changeSelect(this)">
+								  	<option value="">--请选择--</option>
+								  	<c:forEach items="${fieldList}" var="field" varStatus="index">
+								  		<option class="${field.isNeedCorp}" value="${field.id}" <c:if test="${field.id == item.reportItem.field.id}" >selected="selected"</c:if> >${field.name}</option>
+								  	</c:forEach>
+								  </select>
+							</td>
+							<td><input type="text" name="value" class="input_text radius" value="${item.value}" maxlength="50" onkeyup="controlDecimal(this)" onkeydown="controlDecimal(this)" /></td>
+							<td>
+							  <c:if test="${item.reportItem.field.isNeedCorp == 1}">
+							  	<input value="${item.corp.name}" name="corpName" class="corpName input_text radius ml_5 mr_10" placeholder="请选择企业" readonly="readonly" type="text" style="width:150px;" onclick="chooseCorp(this)">
+							  	<input value="${item.corpId}" name="corpId" class="corpId" type="hidden">
+							  </c:if>
+							  <c:if test="${item.reportItem.field.isNeedCorp != 1}">
+							  	无
+							  	<input value="" name="corpId" class="corpId" type="hidden">
+							  </c:if>
+							</td>
+							<td><a href="#" onclick="deleteTr(this)">删除</a></td>
+						</tr>
+					</c:forEach>
+				</tbody>
+
+			</table>
+			</div>
+		</div>
+		<!-- 存放select的隐藏div -->
+		<div id="selectDiv" style="display: none">
+		<p:select id="fieldList" path="fieldId" class="input_text radius " style="width:350px;" onchange="changeSelect(this)">
+		  	<p:option value="">--请选择--</p:option>
+		  	<c:forEach items="${fieldList}" var="item" varStatus="index">
+		  		<p:option class="${item.isNeedCorp}" value="${item.id}">${item.name}</p:option>
+		  	</c:forEach>
+		  </p:select>
+		</div>
+	</form>
+	
+	
+</body>
+
+</html>

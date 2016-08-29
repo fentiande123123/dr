@@ -1,0 +1,167 @@
+package com.telehot.times.comm.services;
+
+
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.hibernate.criterion.MatchMode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+
+import com.telehot.platform.app.jpa.spring.criteria.Criteria;
+import com.telehot.platform.app.jpa.spring.criteria.Restrictions;
+import com.telehot.platform.app.spring.search.Searchable;
+import com.telehot.platform.app.utils.StringUtils;
+import com.telehot.times.comm.constants.SysConstant;
+import com.telehot.times.comm.manager.AreaManager;
+import com.telehot.times.comm.model.Area;
+import com.telehot.times.comm.model.Field;
+
+
+/**
+ * 区县Service 版权：(C) 版权所有 2000-2014 上海天好电子商务股份有限公司苏州分公司
+ * 
+ * @author zhou
+ * @version $Id$
+ */
+@Service
+@Transactional
+public class AreaService {
+
+    /**
+     * AreaManager
+     */
+    @Autowired
+    private AreaManager areaManager;
+
+    /**
+     * 查询page对象的列表
+     * 
+     * @author zhou
+     * @param searchable Searchable
+     * @param criteria Criteria
+     * @return Page
+     */
+    public Page<Area> list(Searchable searchable, Criteria<Area> criteria) {
+        Page<Area> page = areaManager.findAll(criteria, searchable.getPage());
+        return page;
+    }
+    
+    /**
+     * 查询所有的Area
+     * @return List<Area>
+     */
+    public List<Area> findAllArea() {
+        return areaManager.findAll();
+    }
+
+    /**
+     * 保存
+     * 
+     * @author zhou
+     * @param area Area
+     */
+    public void save(Area area) {
+        areaManager.save(area);
+    }
+
+    /**
+     * 删除
+     * 
+     * @author zhou
+     * @param id Long
+     */
+    public void delete(Long id) {
+        areaManager.delete(id);
+    }
+
+    /**
+     * 通过id找到一个对象
+     * 
+     * @author zhou
+     * @param id Long
+     * @return Area
+     */
+    public Area findById(Long id) {
+        return areaManager.findOne(id);
+    }
+    
+    /**
+     * 通过code找到一个对象
+     * 
+     * @author zhou
+     * @param code String
+     * @return Area
+     */
+    public Area findByCode(String code) {
+        return areaManager.findOne("select a from Area a where a.code = ?1", new Object[]{code});
+    }
+    
+    /**
+     * 通过id找到一个对象
+     * 
+     * @author zhou
+     * @param id Long
+     * @return Area
+     */
+    public boolean hasChild(Long id) {
+        Criteria<Area> c = Criteria.forClass(Area.class);
+        c.add(Restrictions.eq("parentId", id));
+        List<Area> list = areaManager.findAll(c);
+        if (list != null && list.size() > 0) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * 
+     * 塞全国的prefix
+     * @author zhou
+     * @param code String
+     */
+    public void setQGPrefix(String code){
+        areaManager.setQgPrefix(code);
+    }
+    
+    /**
+     * 
+     * 得到所有子区县
+     * @author zhou
+     * @param parentId Long
+     * @return List
+     */
+    public List<Area> findAllChild(Long parentId){
+        List<Area> areaChildList = areaManager.findAll("from Area a where a.parentId = ?1", new Object[]{parentId});
+        return areaChildList;
+    }
+    
+    /**
+     * 
+     * 塞所有的子区县的prefix
+     * @author zhou
+     * @param parentId Long
+     */
+    public void setChildPrefix(Long parentId){
+        Area areaParent = findById(parentId);
+        areaManager.setChildPrefix(areaParent.getPrefix(), areaParent.getPrefixName(), parentId);
+    }
+    
+    /**
+     * 
+     * 塞所有的prefix
+     * @author zhou
+     * @param parentId Long
+     */
+    public void setAllPrefix(Long parentId){
+        if (hasChild(parentId)) {
+            setChildPrefix(parentId);
+            List<Area> areaChildList = findAllChild(parentId);
+            for (Area area : areaChildList) {
+                setAllPrefix(area.getId());
+            }
+        }
+    }
+}

@@ -1,0 +1,45 @@
+package com.telehot.times.comm.model;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import com.telehot.platform.app.jpa.hibernate.SimpleIdEntity;
+import com.telehot.platform.app.meta.FieldMeta;
+import com.telehot.platform.app.meta.TableMeta;
+
+/**
+ * 企业Model
+ * 版权：(C) 版权所有 2000-2014 上海天好电子商务股份有限公司苏州分公司
+ * @author   yujunyi
+ * @version  $Id: Area.java 207 2016-05-30 03:25:00Z yujunyi $
+ */
+@Entity
+@Table(name = "SYS_CORP")
+@TableMeta(name = "企业信息")
+public class Corp extends SimpleIdEntity<Long> {
+    
+    /**
+     * serialVersionUID
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 名称
+     */
+    @FieldMeta(name = "名称")
+    private String name;
+    
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+   
+    
+}

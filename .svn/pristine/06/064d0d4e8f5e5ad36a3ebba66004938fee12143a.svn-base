@@ -1,0 +1,136 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=r1k8GzhrG4HOw8aYtocFzUPP3LYLDmTB"></script>
+<script type="text/javascript" src="${ctx}/page/reportSearch/reportSearch-map.js"></script>
+<style type="text/css">  
+   .anchorBL{  
+       display:none;  
+   }  
+</style>
+
+</head>
+<body>
+	<form action="map.do" method="post" id="frm" >
+	<input type="hidden" id="reportTypeId" name="reportTypeId" value="${reportType.id}" />
+		<div  class="submaincc">
+		<div class="cl pd_15">
+		<h1 class="page_title">${reportType.name}区域分布图</h1>
+			<!--搜索模块-->
+		     <div class="align_center cl" style="text-align: center">
+ 			 <div style="margin-bottom: 10px;">
+ 			     年份：
+ 			   <p:input path="year" id="year"  class="tui_datepicker input_text radius" datatype="*"   
+ 			   style="width:150px;" nullmsg="年份不能为空" placeholder="请选择年份" 
+ 			   onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'yyyy'})" />
+ 			     字段：
+ 			   <p:select id="fieldList" path="fieldId" class="input_text radius " value="${fieldId }" style="width:150px; white-space:nowrap;">
+	 		  	 <c:forEach items="${fieldList}" var="item" varStatus="index">
+			  		<p:option class="${item.isNeedCorp}" value="${item.id}">${item.name}</p:option>
+			  	 </c:forEach>
+			   </p:select>
+			   方式：
+			   <select name="way" class="input_text radius " style="width:100px;" onchange="formSubmit()">
+			  	<option value="chansheng" <c:if test="${way == 'chansheng'}" >selected="selected"</c:if>>产生</option>
+			  	<option value="chuli" <c:if test="${way == 'chuli'}" >selected="selected"</c:if>>处理</option>
+			  </select>
+			   <button style="margin-left: 40px;" class="btn btn_primary" type="button" onclick="submitForm()" value="button"><i class="fa fa-search"></i> 查询</button>
+		    </div>
+		    </div>
+		 		<div id="mapDiv" style="width: 800px; height: 350px;margin-left: 60px;">
+		 			
+		 		</div>
+			</div>
+		</div>
+	</form>
+	
+	
+</body>
+
+</html>
+<script>
+	// 百度地图API功能
+	var map = new BMap.Map("mapDiv");// 创建地图实例 
+	map.centerAndZoom(new BMap.Point(121.48,31.22), 11);// 初始化地图，设置中心点坐标经纬度和地图级别
+	map.enableScrollWheelZoom(true);
+	var index = 0;
+	var myGeo = new BMap.Geocoder();
+	var adds = [];
+	function bdGEO(){
+		var add = adds[index];
+		geocodeSearch(add);
+		index++;
+	}
+	function geocodeSearch(add){
+		if(index < adds.length){
+			setTimeout(window.bdGEO,400);
+		} 
+		myGeo.getPoint(add, function(point){
+			if (point) {
+				var address = new BMap.Point(point.lng, point.lat);
+				var label = new BMap.Label(index+":"+add,{offset:new BMap.Size(20,-10)})
+				//设置文字标签
+				label.setStyle({
+					 color : "red",
+					 fontSize : "12px",
+					 height : "20px",
+					 lineHeight : "20px",
+					 fontFamily:"微软雅黑"
+				 });
+				 addMarker(address,label);
+			}
+		}, "中国");
+	}
+	// 编写自定义函数,创建标注
+	function addMarker(point,label){
+		var marker = new BMap.Marker(point);// 创建标注
+		map.addOverlay(marker); // 将标注添加到地图中
+		marker.setLabel(label);//将文字标签添加到标注上
+	}
+	function submitForm(){
+		$.ajax({
+			url: "getMapJson.do",
+			data: $("form").serialize(),
+			type: "post",
+			async: true,
+			success: function(data){
+				var json = eval("("+data+")");
+				//初始化数组，下标和地图，清空页面数据
+				adds = [];
+				index = 0;
+				map = new BMap.Map("mapDiv");
+				map.centerAndZoom(new BMap.Point(121.48,31.22), 11);// 初始化地图，设置中心点坐标经纬度和地图级别
+				map.enableScrollWheelZoom(true);
+				//map的样式，去掉高速公路
+				map.setMapStyle({
+				  styleJson:[{
+			                    "featureType": "arterial",
+			                    "elementType": "all",
+			                    "stylers": {
+			                              "visibility": "off"
+			                    }
+				         		}]
+				});
+				for(var key in json.list){
+					if(typeof(json.list[key].count) == "undefined"){
+						adds.push(json.list[key].area + "( 数量：0 )");
+					}else{
+						adds.push(json.list[key].area + "( 数量：" + json.list[key].count + " )");
+					}
+				}
+				bdGEO();
+			}
+		})
+		
+	}
+	function formSubmit(){
+		$("form").submit();
+	}
+</script>

@@ -1,0 +1,164 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+
+<%-- <script type="text/javascript" src="${ctx}/page/reportMain/reportMain-list.js"></script> --%>
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.js"></script>
+<script type="text/javascript">
+jQuery.noConflict();
+</script>
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.autocomplete.js"></script>
+<link href="${ctx}/libs/autocomplete/jquery.autocomplete.css" rel="stylesheet" type="text/css"/>
+
+<script type="text/javascript">
+</script>
+<script >
+	var frm;
+	$(function() {
+		frm = $("#frm").Validform({
+			tiptype : 2
+		});
+	});
+	function f(){
+		if(event.keyCode == 13){
+			return false;
+		}
+		}
+	function saveF(){
+		var flag = frm.check(false);
+		if(flag){
+			$.ajax({
+				type : "POST",
+				data : $("#frm").serialize(),
+				url : "save.do",
+				dataType : "json",
+				success : function(data){
+					if (data && data.success) {
+						$.showAlert({'title':'提示','content':'保存成功！','sure':sureFunction});
+					} else {
+						$.showAlert({'title':'提示','content':data.displayMsg,'sure':sureFunction1});
+					}
+				}
+
+		});
+		}
+	}
+
+var sureFunction=function(){
+	/* top.frames['rightFrame'].query(); */
+	parent.location.reload();
+	parent.$.closePopWin();
+};
+var sureFunction1=function(){
+	//parent.$.closePopWin();
+};
+</script>
+<script type="text/javascript">
+
+	function chooseArea(){
+		$.openDialog({
+			"title" : "区域选择",
+			"height" : 300,
+			"width" : 300,
+			"url":"../area/index.do"
+		});
+	}
+	function setArea(id,name){
+		$("#areaId").val(id);
+		$("#areaName").val(name);
+	}
+ 
+	function query(){
+		$("#frm").submit();
+		}
+</script>
+<style type="text/css">
+#Validform_msg {
+	opacity: 0;
+}
+#zDiv {
+	margin-top: 50px;
+}
+</style>
+</head>
+
+<body>
+
+	<form action="save.do" method="post" class="form form_horizontal" id="frm" onsubmit="return false;">
+		<p:hidden path="area.id" id="id"></p:hidden>
+		<p:hidden path="area.parentId" id="parentId"></p:hidden>
+		<div class="row cl">
+			<label class="form_label col_2"><span class="btx">*</span>编码：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<p:input path="area.code" class="input_text on_focus" datatype="*" autocomplete="off" type="text" nullmsg="编码不能为空" maxlength="30"></p:input>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+			<label class="form_label col_2"><span class="btx">*</span>名称：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<p:input path="area.name" class="input_text on_focus" datatype="*" autocomplete="off" type="text" nullmsg="名称不能为空" maxlength="50"></p:input>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form_label col_2"><span class="btx">*</span>邮编：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<p:input path="area.zipCode" class="input_text" datatype="*" autocomplete="off" type="text" nullmsg="邮编不能为空" maxlength="50"></p:input>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+			<label class="form_label col_2"><span class="btx">*</span>所选区域：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<input type="hidden" id="areaId" name="areaId" value="${areaId} "/>
+ 			  	<input type="text" class="input_text radius" name="areaName" style="width: 227px;" id="areaName" onclick="chooseArea();" placeholder="请选择区域"/>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+			<div class="row cl" id="zDiv">
+				<label class="form_label col_2"><span class="btx">*</span>区域名称：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<p:input path="area.prefixName" class="input_text on_focus" datatype="s" autocomplete="off" type="text" nullmsg="名称不能为空" maxlength="30"></p:input>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div> 
+			</div>
+		</div>
+		
+		<div class="row cl">
+			<div class="col_10 col_offset_2">
+				<button class="btn btn_primary radius" type="button" onclick="saveF();this.blur()">
+					<i class="fa fa-save"></i> 保存
+				</button>
+
+				<button class="btn btn_default radius" type="button" onclick="parent.$.closePopWin();">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+			<div class="col_6">
+				<span class="Validform_checktip"></span>
+			</div>
+		</div>
+
+	</form>
+</body>
+</html>

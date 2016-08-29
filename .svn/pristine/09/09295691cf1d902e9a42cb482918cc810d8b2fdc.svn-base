@@ -1,0 +1,20 @@
+ $(function() {
+		$(".framebox_content_l").hide();
+		$(".hidearrow").hide();
+		$(".showarrow").show();
+		$(".dislpayArrow").css({left:'0px'});
+		$(".hidearrow").bind('click',function(e)
+		{ 
+			$(this).hide();
+			$(".showarrow").show();
+			$(".dislpayArrow").animate({left:'0px'},200);
+			$(".framebox_content_l").hide(200);
+		});
+		$(".showarrow").bind('click',function(e)
+		{ 
+			$(this).hide();
+			$(".hidearrow").show();
+			$(".dislpayArrow").animate({left:'200px'},200);
+			$(".framebox_content_l").show(200);
+		}); 
+	});

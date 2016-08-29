@@ -1,0 +1,66 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+
+<script type="text/javascript" src="${ctx}/page/reportSearch/reportSearch-chart.js"></script>
+<script type="text/javascript" src="${ctx}/libs/js/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/libs/js/exporting.js"></script>
+
+</head>
+<body>
+	<form action="chart.do" method="post" id="frm" >
+	<input type="hidden" id="reportTypeId" name="reportTypeId" value="${reportType.id}" />
+	<input type="hidden" id="oldAreaName" name="oldAreaName" value="${oldAreaName}" />
+		<div  class="submaincc">
+		<div class="cl pd_15">
+		<h1 class="page_title">${reportType.name}统计图</h1>
+			<!--搜索模块-->
+		     <div class="align_center cl" style="text-align: center">
+		     <div style="margin-bottom: 10px; font-size: 16">
+		     	<input type="radio" name="choose" class="chooseSearch" onclick="chooseSearch()" value="yearSearch" />按年份查询&nbsp;&nbsp;&nbsp;
+		     	<input type="radio" name="choose" class="chooseSearch" onclick="chooseSearch()" value="areaSearch" />按区县查询&nbsp;&nbsp;&nbsp;
+		     	<input type="radio" name="choose" class="chooseSearch" onclick="chooseSearch()" value="fieldSearch" />按字段查询
+		     </div>
+ 			 <div id="conditions" style="margin-bottom: 10px;">
+ 			   <div id="yearDiv" style="display: none;">
+ 			     年份：
+ 			   <p:input path="year" id="year"  class="tui_datepicker input_text radius" datatype="*"   
+ 			   style="width:150px;" nullmsg="年份不能为空" placeholder="请选择年份" 
+ 			   onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'yyyy'})" />
+ 			   </div>
+ 			   <div id="areaDiv" style="display: none; margin-left: 10px;">
+ 			     区县：
+ 			   <input type="hidden" id="areaId" name="areaId" value="${areaId}" />
+ 			   <input type="text" class="input_text radius" style="width: 150px;" value="${oldAreaName}" id="areaName" onclick="chooseArea();" placeholder="请选择区县"/>
+ 			   </div>  
+ 			   <div id="fieldDiv" style="display: none; margin-left: 10px;">
+ 			     字段：
+ 			   <p:select id="fieldList" path="fieldId" class="input_text radius " value="${fieldId }" style="width:150px; white-space:nowrap;">
+	 		  	 <p:option id="firstOption" value="">--请选择--</p:option>
+	 		  	 <c:forEach items="${fieldList}" var="item" varStatus="index">
+			  		<p:option class="${item.isNeedCorp}" value="${item.id}">${item.name}</p:option>
+			  	 </c:forEach>
+			   </p:select>
+			   </div>
+			   <div id="buttonDiv" style="display: none;">
+			   <button style="margin-left: 40px;" class="btn btn_success" type="button" onclick="showCharts()" value="button"><i class="fa fa-search"></i> 查询</button>
+		       </div>
+		    </div>
+		    </div>
+		 		<div id="highChart" style="width: 900px; height: 350px;">
+		 			
+		 		</div>
+			</div>
+		</div>
+	</form>
+	
+	
+</body>
+
+</html>

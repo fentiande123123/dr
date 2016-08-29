@@ -1,0 +1,245 @@
+package com.telehot.times.comm.controller;
+
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.collections.map.LinkedMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.telehot.platform.app.spring.search.Searchable;
+import com.telehot.times.comm.constants.ExcelConstant;
+import com.telehot.times.comm.manager.FieldManager;
+import com.telehot.times.comm.model.Field;
+import com.telehot.times.comm.model.FieldRelateType;
+import com.telehot.times.comm.services.AreaService;
+import com.telehot.times.comm.services.ExcelService;
+import com.telehot.times.comm.services.FieldRelateTypeService;
+import com.telehot.times.comm.services.FieldService;
+import com.telehot.times.comm.services.ReportSearchService;
+import com.telehot.times.comm.services.ReportTypeService;
+
+
+/**
+ * 报表查询功能 版权：(C) 版权所有 2000-2014 上海天好电子商务股份有限公司苏州分公司
+ * 
+ * @author yujunyi
+ * @version $Id: ReportMainController.java 223 2016-06-02 08:03:16Z zhoupeng $
+ */
+@Controller
+@RequestMapping("/reportSearch")
+public class ReportSearchController {
+
+    /**
+     * ReportService
+     */
+    @Autowired
+    ReportSearchService reportSearchService;
+
+    /**
+     * FieldRelateTypeService
+     */
+    @Autowired
+    FieldRelateTypeService fieldRelateTypeService;
+
+    /**
+     * FieldService
+     */
+    @Autowired
+    FieldService fieldService;
+
+    /**
+     * AreaService
+     */
+    @Autowired
+    AreaService areaService;
+
+    /**
+     * ExcelService
+     */
+    @Autowired
+    ExcelService excelService;
+
+    /**
+     * ReportTypeService
+     */
+    @Autowired
+    ReportTypeService reportTypeService;
+
+    /**
+     * Field
+     */
+    @Autowired
+    FieldManager fieldManager;
+
+    /**
+     * list
+     * 
+     * @param request HttpServletRequest
+     * @param reportTypeId Long
+     * @param searchable Searchable
+     * @param model Model
+     * @return jsp页面
+     */
+    @RequestMapping("/list")
+    public String list(Long reportTypeId, HttpServletRequest request, Searchable searchable,
+                       Model model) {
+        String startYear = request.getParameter("startYear") == null ? "" : request.getParameter(
+            "startYear").trim();
+        String endYear = request.getParameter("endYear") == null ? "" : request.getParameter(
+            "endYear").trim();
+        // 头信息 分类下的填值类别
+        List<FieldRelateType> itemList = fieldRelateTypeService.findListByReportType(reportTypeId);
+        model.addAttribute("itemList", itemList);
+        processHeads(itemList, model);
+        // 获取所有值value
+        List<Object[]> valueList = reportSearchService.countValueByCode(reportTypeId);
+        Map<String, Object> map = new HashMap<String, Object>();
+        for (Object[] obj : valueList) {
+            String key = obj[0] + "_" + obj[1] + "_" + obj[2];
+            map.put(key, obj[3]);
+        }
+        model.addAttribute("result", map);
+
+        // 根据条件获取 年份 + 区域
+        String condition = "";
+        if (!("".equals(startYear))) {
+            condition += "and m.year >= '" + startYear + "' ";
+        }
+        if (!("".equals(endYear))) {
+            condition += "and m.year <= '" + endYear + "' ";
+        }
+        List<Object[]> areaList = reportSearchService.getYearAreas(condition, reportTypeId);
+
+        model.addAttribute("areaList", areaList);
+        model.addAttribute("reportType", reportTypeService.findById(reportTypeId));
+        model.addAttribute("startYear", startYear);
+        model.addAttribute("endYear", endYear);
+        return "reportSearch/reportSearch-list";
+    }
+
+ 
+    /**
+     * 处理头信息 分层
+     * @author Administrator
+     * @param itemList
+     * @param model
+     */
+    public void processHeads(List<FieldRelateType> itemList, Model model) {
+        Map<String, Map<String, Integer>> result = new LinkedMap();
+        List<String> down = new ArrayList();
+        for (FieldRelateType item : itemList) {
+            String name = item.getField().getName();
+
+            if (name.contains("-")) {
+                String[] names = name.split("-");
+                String d = names[names.length - 1];
+                model.addAttribute("leng", names.length);
+                for (Integer i = 0; i < names.length; i++ ) {
+                    Map<String, Integer> map = null;
+                    // HEAD1  HEAD2  HEAD3 ... 在jsp上分别表示第一行   最后一行的数据放在down  list里面
+                    if (result.get("HEAD" + (i + 1)) == null) {
+                        map = new LinkedMap();
+                    } else {
+                        map = result.get("HEAD" + (i + 1));
+                    }
+                    //   names[i]为一个td    td的长度为colspan
+                    map.put(names[i], countColspan(getPrefixName(i, names)));
+
+                    result.put("HEAD" + (i + 1), map);
+                }
+                down.add(d);
+            } else {// 如果没有- 不许要分层头 直接一行显示
+                model.addAttribute("leng", 1);
+                down.add(name);
+            }
+        }
+
+        model.addAttribute("down", down);
+        model.addAttribute("head", result);
+    }
+
+ 
+
+    /**
+     * fiedl name获取前后关联的值
+     * @author Administrator
+     * @param i
+     * @param names
+     * @return name
+     */
+    public String getPrefixName(Integer i, String[] names) {
+        String result = "";
+        for (Integer k = 0; k <= i; k++ ) {
+            result += names[k] + "-";
+        }
+        return result;
+    }
+
+    /**
+     * filed有多少个子结果 count
+     * @author Administrator
+     * @param name
+     * @return count
+     */
+    public Integer countColspan(String name) {
+        List<Object[]> r = (List<Object[]>)fieldManager.findAllBySQL("select count(id) from DI_FIELD where name like  '" + name + "%'");
+        System.out.println(r.get(0));
+        return Integer.parseInt(String.valueOf(r.get(0)));
+    }
+
+    /**
+     * 报表导出
+     * 
+     * @author zhou
+     * @param outputStream ServletOutputStream
+     * @param reportTypeId Long
+     * @param reponse HttpServletResponse
+     */
+    @RequestMapping("/export")
+    public void export(ServletOutputStream outputStream, Long reportTypeId,
+                       HttpServletResponse reponse) {
+        try {
+            String fileName = new String("报表".getBytes("GBK"), "iso8859-1");
+            reponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName + ".xls");
+            reponse.setContentType("application/octet-stream"); // 下载通用格式
+            // 拼数据
+            List<List<String>> list = new ArrayList<List<String>>();
+            List<String> l = null;
+            List<Object[]> yearArea = reportSearchService.getYearAreaIds(reportTypeId);
+            for (Object[] objects : yearArea) {
+                l = new ArrayList<String>();
+                // 年份
+                l.add(objects[0].toString());
+                // 区县名
+                l.add(areaService.findById(Long.valueOf(objects[1].toString())).getName());
+                List<Field> field = fieldService.findFieldByType(reportTypeId);
+                for (Field f : field) {
+                    List<Double> valueList = reportSearchService.getOneValue((int)objects[0],
+                        Long.valueOf(objects[1].toString()), f.getId());
+                    // 查询到了值，塞值
+                    if (valueList.size() > 0) {
+                        l.add(valueList.get(0).toString());
+                    } else {
+                        l.add(null);
+                    }
+                }
+                list.add(l);
+            }
+            // 调用excelService导出报表
+            excelService.listToExcel(list, ExcelConstant.PATH_WAST_OIL, outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

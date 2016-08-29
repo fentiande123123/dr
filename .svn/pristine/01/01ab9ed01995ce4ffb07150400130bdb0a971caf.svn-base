@@ -1,0 +1,90 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.js"></script>
+<script type="text/javascript">
+jQuery.noConflict();
+</script>
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.autocomplete.js"></script>
+<link href="${ctx}/libs/autocomplete/jquery.autocomplete.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="${ctx}/page/field/field-edit.js"></script>
+
+<style type="text/css">
+#Validform_msg {
+	opacity: 0;
+}
+</style>
+</head>
+
+<body>
+<div class="cl pd_15">
+		<table class="table table_border table_bordered table_bg  table_sort mb_15">
+		<tr >
+			<th width="15%" class="text_r">
+				修改者
+			</th>
+			<td>
+				${editLog.userName}
+			</td>
+			<th width="15%" class="text_r">
+				修改时间
+			</th>
+			<td>
+				${fn:substring(editLog.editTime, 0, 10)}
+			</td>
+		</tr>
+		<tr>
+			<th width="15%" class="text_r">
+				修改前字段
+			</th>
+			<td>
+				${editLog.lastField.name}
+			</td>
+			<th width="15%" class="text_r">
+				修改后字段
+			</th>
+			<td>
+				${editLog.currentField.name}
+			</td>
+		</tr>
+		<tr >
+			<th width="15%" class="text_r">
+				修改前企业
+			</th>
+			<td>
+				<c:if test="${editLog.lastCorpId == null}">无</c:if>
+				<c:if test="${editLog.lastCorpId != null}">${editLog.lastCorp.name}</c:if>
+			</td>
+			<th width="15%" class="text_r">
+				修改后企业
+			</th>
+			<td>
+				<c:if test="${editLog.currentCorpId == null}">无</c:if>
+				<c:if test="${editLog.currentCorpId != null}">${editLog.currentCorp.name}</c:if>
+			</td>
+		</tr>
+		<tr >
+			<th width="15%" class="text_r">
+				修改前值
+			</th>
+			<td>
+				${editLog.lastValue}
+			</td>
+			<th width="15%" class="text_r">
+				修改后值
+			</th>
+			<td>
+				${editLog.currentValue}
+			</td>
+		</tr>
+</table>
+</div>
+</body>
+</html>

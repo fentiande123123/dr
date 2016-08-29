@@ -1,0 +1,124 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.js"></script>
+<script type="text/javascript">
+jQuery.noConflict();
+</script>
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.autocomplete.js"></script>
+<link href="${ctx}/libs/autocomplete/jquery.autocomplete.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="${ctx}/page/project/project-edit.js"></script>
+
+<script type="text/javascript">
+var data_tojson = '${ResultToJson}';
+var qq = eval("(" + data_tojson + ")");
+</script>
+<script >
+	var frm;
+	$(function() {
+		frm = $("#frm").Validform({
+			tiptype : 2
+		});
+	});
+	function f(){
+		if(event.keyCode == 13){
+			return false;
+		}
+		}
+	function saveF(){
+		var flag = frm.check(false);
+		if(flag){
+			$.ajax({
+				type : "POST",
+				data : $("#frm").serialize(),
+				url : "save.do",
+				dataType : "json",
+				success : function(data){
+					if (data && data.success) {
+						$.showAlert({'title':'提示','content':'保存成功！','sure':sureFunction});
+					} else {
+						$.showAlert({'title':'提示','content':data.displayMsg,'sure':sureFunction1});
+					}
+				}
+
+		});
+		}
+	}
+
+var sureFunction=function(){
+	top.frames['rightFrame'].query();
+	parent.$.closePopWin();
+};
+var sureFunction1=function(){
+	//parent.$.closePopWin();
+};
+</script>
+<script type="text/javascript">
+	function query(){
+		$("#frm").submit();
+		}
+</script>
+<style type="text/css">
+#Validform_msg {
+	opacity: 0;
+}
+</style>
+</head>
+
+<body>
+<div class="cl pd_15">
+		<p:hidden path="project.id" id="id"></p:hidden>
+		<h1 class="page_title_sub">项目信息</h1>
+		<table class="table table_border table_bordered table_bg  table_sort mb_15">
+		<tr >
+		<th width="20%" class="text_r">
+			项目编号
+		</th>
+		<td>
+			${project.pjCode }
+		</td>
+		<th width="20%" class="text_r">
+			项目名称
+		</th>
+		<td>
+			${project.pjName }
+			</td>
+		</tr>
+		<tr>
+			<th width="20%" class="text_r">客户经理</th>
+			<td>${project.cm }</td>
+			<th width="20%" class="text_r">项目经理</th>
+			<td>${project.pm }</td>
+		</tr>
+		<tr>
+			<th width="20%" class="text_r">立项时间</th>
+			<td>	<fmt:formatDate value="${project.createPjTime }" pattern="yyyy-MM-dd"/></td>
+			<th width="20%" class="text_r">状态</th>
+			<td>
+				<c:if test="${project.states eq '0' }">未启动</c:if>
+				<c:if test="${project.states eq '1' }">进行中</c:if>
+				<c:if test="${project.states eq '2' }">挂起审批中</c:if>
+				<c:if test="${project.states eq '3' }">挂起</c:if>
+				<c:if test="${project.states eq '4' }">解挂审批中</c:if>
+				<c:if test="${project.states eq '5' }">已结束</c:if>
+				<c:if test="${project.states eq '6' }">运维中</c:if>
+			</td>
+		</tr>
+		<tr>
+				<th width="20%" class="text_r">项目名称拼音</th>	<td>${project.pinYin }
+</td>
+				<th width="20%" class="text_r"></th><td></td>
+		</tr>
+		
+
+</table>
+</div>
+</body>
+</html>

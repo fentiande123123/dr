@@ -1,0 +1,111 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+
+<script type="text/javascript" src="${ctx}/page/reportMain/reportMain-list.js"></script>
+</head>
+<body>
+
+	<form action="list.do" method="post" id="frm" >
+	<input type="hidden" id="reportTypeId" name="reportTypeId" value="${reportType.id}" />
+	<input type="hidden" id="oldAreaName" name="oldAreaName" value="${oldAreaName}" />
+		<div  class="submaincc">
+		<div class="cl pd_15">
+		<h1 class="page_title">${reportType.name}</h1>
+			<!--搜索模块-->
+		     <div class="align_center cl" style="text-align: left;">
+ 			<div style="margin-bottom: 10px; margin-left: 15%;">
+ 			    开始年份：
+ 			  <p:input path="startYear" id="startYear"  class="tui_datepicker input_text radius" datatype="*"   style="width:150px;" nullmsg="开始年份不能为空" placeholder="请输入开始年份" onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'yyyy'})" />&nbsp;&nbsp;&nbsp;
+		                结束年份：
+ 			  <p:input path="endYear" id="endYear"  class="tui_datepicker input_text radius" datatype="*"   style="width:150px;" nullmsg="结束年份不能为空" placeholder="请输入结束年份" onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'yyyy'})" />&nbsp;&nbsp;&nbsp;
+		                <%-- 开始月份：
+		      <p:input path="startMonth" id="startMonth"  class="tui_datepicker input_text radius" datatype="*"   style="width:148px;" nullmsg="开始月份不能为空" placeholder="请输入开始月份" onfocus="chooseStartYear()" onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'MM'})" />&nbsp;&nbsp;&nbsp; --%>
+		        
+		                区域：
+ 			  <input type="hidden" id="areaId" name="areaId" value="${areaId}" />
+ 			  <input type="text" class="input_text radius" style="width: 150px;" id="areaName" onclick="chooseArea();" placeholder="请选择区域"/>
+ 			  &nbsp;&nbsp; 方式：
+ 			  <select id="way" name="way" class="input_text radius " style="width:100px;">
+ 			    <option value="">请选择</option>
+			  	<option value="chansheng" <c:if test="${way == 'chansheng'}" >selected="selected"</c:if>>源头产生</option>
+			  	<option value="chuli" <c:if test="${way == 'chuli'}" >selected="selected"</c:if>>处理利用</option>
+			  	<option value="huishou" <c:if test="${way == 'huishou'}" >selected="selected"</c:if>>回收运输</option>
+			  	<option value="xiaoshou" <c:if test="${way == 'xiaoshou'}" >selected="selected"</c:if>>销售使用</option>
+			  </select>
+		    </div>
+		    <div style="margin-bottom: 10px; margin-left: 34%;"">
+ 			    
+		                 <%-- 结束月份：
+		      <p:input path="endMonth" id="endMonth"  class="tui_datepicker input_text radius" datatype="*"   style="width:148px;" nullmsg="结束月份不能为空" placeholder="请输入结束月份" onfocus="chooseEndYear()" onclick="WdatePicker({startDate:'%y-%M-%d 09:00:00',dateFmt:'MM'})" />&nbsp;&nbsp;&nbsp; --%>
+		      <button style="margin-left: 3px;" class="btn btn_primary" type="button" 
+		      onclick='$.openDialog({"title":"新增","height":550,"width":950,"url":"${ctx}/reportMain/add.do?reportTypeId=${reportType.id}&way=1"}); this.blur()'>
+		      <i class="fa fa-plus-square"></i> 新增源头产生</button>
+		      <button style="margin-left: 3px;" class="btn btn_primary" type="button" 
+		      onclick='$.openDialog({"title":"新增","height":550,"width":950,"url":"${ctx}/reportMain/add.do?reportTypeId=${reportType.id}&way=2"}); this.blur()'>
+		      <i class="fa fa-plus-square"></i> 新增处理利用</button>
+		      <button style="margin-left: 3px;" class="btn btn_primary" type="button" 
+		      onclick='$.openDialog({"title":"新增","height":550,"width":950,"url":"${ctx}/reportMain/add.do?reportTypeId=${reportType.id}&way=3"}); this.blur()'>
+		      <i class="fa fa-plus-square"></i> 新增回收运输</button>
+		      <button style="margin-left: 3px;" class="btn btn_primary" type="button" 
+		      onclick='$.openDialog({"title":"新增","height":550,"width":950,"url":"${ctx}/reportMain/add.do?reportTypeId=${reportType.id}&way=4"}); this.blur()'>
+		      <i class="fa fa-plus-square"></i> 新增销售使用</button>
+		      <button style="margin-left: 3px;" class="btn btn_primary" type="submit"><i class="fa fa-search"></i> 查询</button>
+		    </div>
+		    </div>
+		 
+			<table
+				class="table table_border table_striped table_bordered table_bg table_hover table_sort mt_15 mb_15">
+				<thead>
+					<tr class="text_c ">
+					 	<th width="30px">序号</th>
+						<th width="50px">年份</th>
+						<th width="120px">区域</th>
+						<th width="10%">方式</th>
+						<th width="10%">创建人</th>
+						<th width="10%">创建时间</th>
+						<th width="10%">编辑时间</th>
+						<th width="120px">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					<c:forEach items="${page.content}" var="item" varStatus="index">
+						<tr class="text_c ">
+							<td>${index.count}</td>
+							<td>${item.year}</td>
+							<td>${item.area.name}</td>
+							<td>
+								<c:if test="${item.way == 1}">源头产生</c:if>
+								<c:if test="${item.way == 2}">处理利用</c:if>
+								<c:if test="${item.way == 3}">回收运输</c:if>
+								<c:if test="${item.way == 4}">销售使用</c:if>
+							</td>
+							<td>${item.createPerson}</td>
+							<td>${fn:substring(item.createTime, 0, 10)}</td>
+							<td>${fn:substring(item.editTime, 0, 10)}</td>
+							 <td>
+							  <a href="#" onclick="javascript:edit('${item.id}');">编辑</a>&nbsp;&nbsp;&nbsp;&nbsp;
+							  <a href="#" onclick="javascript:view('${item.id}');">查看</a>&nbsp;&nbsp;&nbsp;&nbsp;
+							  <a href="#" onclick="javascript:deleteReportMain('${item.id}');">删除</a>
+							</td>
+						</tr>
+					</c:forEach>
+				</tbody>
+
+			</table>
+				<p:tuiPage></p:tuiPage>
+			</div>
+		</div>
+	</form>
+	
+	
+</body>
+
+</html>

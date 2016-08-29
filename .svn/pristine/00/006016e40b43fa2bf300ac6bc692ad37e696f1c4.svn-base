@@ -1,0 +1,138 @@
+<%@page language="java" pageEncoding="UTF-8"%>
+<%@include file="/WEB-INF/include/taglibs.jsp"%>
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<%@include file="/WEB-INF/include/meta.jsp"%>
+<%@include file="/WEB-INF/include/s.jsp"%>
+<%@include file="/WEB-INF/include/v.jsp"%>
+
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.js"></script>
+<script type="text/javascript">
+jQuery.noConflict();
+</script>
+<script type="text/javascript" src="${ctx}/libs/autocomplete/jquery.autocomplete.js"></script>
+<link href="${ctx}/libs/autocomplete/jquery.autocomplete.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="${ctx}/page/reportType/reportType-edit.js"></script>
+
+<script type="text/javascript">
+</script>
+<script >
+	var frm;
+	$(function() {
+		frm = $("#frm").Validform({
+			tiptype : 2
+		});
+	});
+	function f(){
+		if(event.keyCode == 13){
+			return false;
+		}
+		}
+	function saveF(){
+		var flag = frm.check(false);
+		if(flag){
+			$.ajax({
+				type : "POST",
+				data : $("#frm").serialize(),
+				url : "save.do",
+				dataType : "json",
+				success : function(data){
+					if (data && data.success) {
+						$.showAlert({'title':'提示','content':'保存成功！','sure':sureFunction});
+					} else {
+						$.showAlert({'title':'提示','content':data.displayMsg,'sure':sureFunction1});
+					}
+				}
+
+		});
+		}
+	}
+
+var sureFunction=function(){
+	top.frames['rightFrame'].query();
+	parent.$.closePopWin();
+};
+var sureFunction1=function(){
+	//parent.$.closePopWin();
+};
+</script>
+<script type="text/javascript">
+	function query(){
+		$("#frm").submit();
+		}
+</script>
+<style type="text/css">
+#Validform_msg {
+	opacity: 0;
+}
+</style>
+</head>
+
+<body>
+
+	<form action="save.do" method="post" class="form form_horizontal" id="frm" onsubmit="return false;">
+		<p:hidden path="reportType.id" id="id"></p:hidden>
+		
+		<div class="row cl">
+			<label class="form_label col_2"><span class="btx">*</span>编码：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<p:input path="reportType.code" class="input_text" datatype="*" autocomplete="off" type="text" nullmsg="编码不能为空" maxlength="30"></p:input>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+			<label class="form_label col_2"><span class="btx">*</span>名称：</label>
+			<div class="col_3">
+			<div class="formControls">
+				<p:input path="reportType.name" class="input_text" datatype="*" autocomplete="off" type="text" nullmsg="名称不能为空" maxlength="50"></p:input>
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+		</div>
+		
+ 		<div class="row cl">
+			<label class="form_label col_2"><span class="btx">*</span>所属类别：</label>
+			<div class="col_3">
+			<div class="formControls">
+			
+				<p:select path="reportType.typeCode" class="input_text " style="width:100px; ">
+					<c:forEach items="${typeMap }" var="cf" varStatus="index">
+						<p:option value="${cf.key }">${cf.value }</p:option>
+					</c:forEach>
+				</p:select>
+			
+			</div>
+			<div>
+				<span class="Validform_checktip"></span>
+			</div>
+			</div>
+			<div class="col_3">
+			<div class="formControls">
+			</div>
+			<div>
+			</div>
+			</div>
+		</div>
+		
+		<div class="row" style="margin-left: 220px; margin-top: 20px;">
+			<div class="col_10 col_offset_2">
+				<button class="btn btn_primary radius" type="button" onclick="saveF();this.blur()">
+					<i class="fa fa-save"></i> 保存
+				</button>
+
+				<button class="btn btn_default radius" type="button" onclick="parent.$.closePopWin();">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+			<div class="col_6">
+				<span class="Validform_checktip"></span>
+			</div>
+		</div>
+
+	</form>
+</body>
+</html>
